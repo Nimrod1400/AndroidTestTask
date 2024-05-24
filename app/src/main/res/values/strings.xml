@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Image Searcher</string>
+    <string name="search_hint">Search on Google Images</string>
+</resources>
