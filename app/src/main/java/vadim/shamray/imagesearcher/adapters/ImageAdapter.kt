@@ -1,5 +1,6 @@
 package vadim.shamray.imagesearcher.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +14,8 @@ import vadim.shamray.imagesearcher.images.Image
 import vadim.shamray.imagesearcher.images.loadImageByUrl
 
 class ImageAdapter(private val scope: LifecycleCoroutineScope,
-                   private val onItemClick: (position: Int) -> Unit)
+                   private val onItemClick: (position: Int) -> Unit,
+                   private val onPageEnd: () -> Unit)
     : RecyclerView.Adapter<ImageAdapter.ImageHolder>() {
     val images: MutableList<Image> = mutableListOf()
 
@@ -61,6 +63,8 @@ class ImageAdapter(private val scope: LifecycleCoroutineScope,
 
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
         holder.bind(images[position])
+
+        if (position + 1 == images.size) onPageEnd()
     }
 
     fun addImage(image: Image) {
@@ -72,6 +76,6 @@ class ImageAdapter(private val scope: LifecycleCoroutineScope,
     fun clear() {
         images.clear()
 
-        notifyDataSetChanged()
+        notifyItemRangeRemoved(0, images.lastIndex)
     }
 }

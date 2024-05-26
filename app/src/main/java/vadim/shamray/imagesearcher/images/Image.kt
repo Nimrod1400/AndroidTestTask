@@ -40,7 +40,7 @@ class SearchQuery(
     val location: String = "Russia",
     val language: String = "ru",
     val resultsCount: Int = 33,
-    val page: Int = 1
+    var page: Int = 1
 ) {
 
     private fun quote(str: String): String {

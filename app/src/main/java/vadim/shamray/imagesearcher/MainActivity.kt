@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -28,7 +27,9 @@ import vadim.shamray.imagesearcher.utils.clamp
 
 class MainActivity : AppCompatActivity() {
     private lateinit var imageAdapter: ImageAdapter
-    private lateinit var imagesDeferred: CompletableDeferred<List<Image?>>
+    private lateinit var imagesDeferred: CompletableDeferred<MutableList<Image?>>
+    private var currentPage = 1
+    private var lastQuery = SearchQuery(query = "Greeting word")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +48,21 @@ class MainActivity : AppCompatActivity() {
     private fun initRecyclerView() {
         val recyclerView = findViewById<RecyclerView>(R.id.images_container)
 
-        imageAdapter = ImageAdapter(lifecycleScope) { position: Int ->
-            GlobalScope.launch(Dispatchers.Main) {
+        imageAdapter = ImageAdapter(lifecycleScope, { position: Int ->
+            lifecycleScope.launch(Dispatchers.Main) {
                 openFullscreen(position)
+            }
+        }) {
+            lifecycleScope.launch { // TODO : move into separate func
+                currentPage += 1
+                lastQuery.page = currentPage
+                val newImages = searchImages(lastQuery)
+
+                for (image in newImages)
+                    if (image != null)
+                        imageAdapter.addImage(image)
+
+                imagesDeferred.complete(imagesDeferred.await().apply { addAll(newImages) })
             }
         }
 
@@ -57,14 +70,14 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = imageAdapter
 
         lifecycleScope.launch { // TODO : move into separate func
-            val images = searchImages(SearchQuery(query = "Greeting word"))
+            val images = searchImages(lastQuery)
             for (image in images) {
                 if (image != null) {
                     imageAdapter.addImage(image)
                 }
             }
-            imagesDeferred = CompletableDeferred(images)
-            imagesDeferred.complete(images)
+            imagesDeferred = CompletableDeferred()
+            imagesDeferred.complete(images.toMutableList())
         }
     }
 
@@ -72,19 +85,25 @@ class MainActivity : AppCompatActivity() {
         val searchField = findViewById<TextInputEditText>(R.id.search_field)
         searchField.setOnEditorActionListener { _, actionId, _ ->
             if (actionId != EditorInfo.IME_ACTION_SEARCH) return@setOnEditorActionListener false
+
             lifecycleScope.launch { // TODO : move into separate func
-                val images = searchImages(SearchQuery(query = searchField.text.toString()))
+                lastQuery = SearchQuery(query = searchField.text.toString())
+                val images = searchImages(lastQuery)
+
                 imageAdapter.clear()
+
                 (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                     .hideSoftInputFromWindow(searchField.windowToken, 0)
                 searchField.clearFocus()
+
                 for (image in images) {
                     if (image != null) {
                         imageAdapter.addImage(image)
                     }
                 }
-                imagesDeferred = CompletableDeferred(images)
-                imagesDeferred.complete(images)
+
+                imagesDeferred = CompletableDeferred()
+                imagesDeferred.complete(images.toMutableList())
             }
             return@setOnEditorActionListener true
         }
@@ -104,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
         val totalAmount = imagesDeferred.await().lastIndex
         val bundle = Bundle()
-
+        position
         var startIndex = clamp(0, position - itemsLeft, position)
         var endIndex = clamp(position, (position + itemsRight), totalAmount)
 
