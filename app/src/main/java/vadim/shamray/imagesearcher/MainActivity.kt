@@ -123,9 +123,9 @@ class MainActivity : AppCompatActivity() {
 
         val totalAmount = imagesDeferred.await().lastIndex
         val bundle = Bundle()
-        position
-        var startIndex = clamp(0, position - itemsLeft, position)
-        var endIndex = clamp(position, (position + itemsRight), totalAmount)
+
+        val startIndex = clamp(0, position - itemsLeft, position)
+        val endIndex = clamp(position, (position + itemsRight), totalAmount)
 
         bundle.putInt(ARG_POSITION, position - startIndex)
 

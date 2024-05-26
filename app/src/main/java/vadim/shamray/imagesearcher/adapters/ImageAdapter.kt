@@ -1,6 +1,5 @@
 package vadim.shamray.imagesearcher.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +16,7 @@ class ImageAdapter(private val scope: LifecycleCoroutineScope,
                    private val onItemClick: (position: Int) -> Unit,
                    private val onPageEnd: () -> Unit)
     : RecyclerView.Adapter<ImageAdapter.ImageHolder>() {
-    val images: MutableList<Image> = mutableListOf()
+    private val images: MutableList<Image> = mutableListOf()
 
     class ImageHolder(private val scope: LifecycleCoroutineScope,
                       template: View,
