@@ -6,10 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager2.widget.ViewPager2
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import vadim.shamray.imagesearcher.adapters.ImageSliderAdapter
-import vadim.shamray.imagesearcher.images.Image
 
 const val ARG_POSITION = "Position"
 const val ARG_AMOUNT = "Amount"
