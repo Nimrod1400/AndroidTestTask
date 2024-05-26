@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    // kotlin("jvm") version "2.0.0-RC3"
+    kotlin("plugin.serialization") version "2.0.0-RC3"
 }
 
 android {
@@ -39,7 +41,10 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.kotlin.stdlib)
+    //implementation(libs.kotlinx.serialization.json)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    implementation(libs.okhttp)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
