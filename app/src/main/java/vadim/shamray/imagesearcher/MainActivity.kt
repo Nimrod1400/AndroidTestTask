@@ -26,6 +26,7 @@ import vadim.shamray.imagesearcher.searcher.searchImages
 import vadim.shamray.imagesearcher.utils.clamp
 
 const val DEFAULT_QUERY = "Hi!"
+const val MAX_PAGES = 10
 
 class MainActivity : AppCompatActivity() {
     private lateinit var imageAdapter: ImageAdapter
@@ -65,6 +66,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadImagesNextPage() {
+        if (currentPage > 10) return
+
         lifecycleScope.launch {
             currentPage += 1
             lastQuery.page = currentPage
@@ -118,6 +121,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(fullscreenIntent)
     }
 
+    // FIXME
     private suspend fun formBundle(position: Int): Bundle = withContext(Dispatchers.Main) {
         val itemsTotal = 33
         val itemsLeft = itemsTotal / 2
