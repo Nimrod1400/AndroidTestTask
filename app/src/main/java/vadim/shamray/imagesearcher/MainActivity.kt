@@ -21,15 +21,17 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import vadim.shamray.imagesearcher.adapters.ImageAdapter
 import vadim.shamray.imagesearcher.images.Image
-import vadim.shamray.imagesearcher.images.SearchQuery
-import vadim.shamray.imagesearcher.images.searchImages
+import vadim.shamray.imagesearcher.searcher.SearchQuery
+import vadim.shamray.imagesearcher.searcher.searchImages
 import vadim.shamray.imagesearcher.utils.clamp
+
+const val DEFAULT_QUERY = "Hi!"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var imageAdapter: ImageAdapter
-    private lateinit var imagesDeferred: CompletableDeferred<MutableList<Image?>>
+    private var imagesDeferred: CompletableDeferred<MutableList<Image?>> = CompletableDeferred()
     private var currentPage = 1
-    private var lastQuery = SearchQuery(query = "Greeting word")
+    private var lastQuery = SearchQuery(query = DEFAULT_QUERY)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,36 +50,39 @@ class MainActivity : AppCompatActivity() {
     private fun initRecyclerView() {
         val recyclerView = findViewById<RecyclerView>(R.id.images_container)
 
-        imageAdapter = ImageAdapter(lifecycleScope, { position: Int ->
+        imageAdapter = ImageAdapter(lifecycleScope, ::loadImagesNextPage) { position: Int ->
             lifecycleScope.launch(Dispatchers.Main) {
                 openFullscreen(position)
             }
-        }) {
-            lifecycleScope.launch { // TODO : move into separate func
-                currentPage += 1
-                lastQuery.page = currentPage
-                val newImages = searchImages(lastQuery)
-
-                for (image in newImages)
-                    if (image != null)
-                        imageAdapter.addImage(image)
-
-                imagesDeferred.complete(imagesDeferred.await().apply { addAll(newImages) })
-            }
         }
 
-        recyclerView.layoutManager = GridLayoutManager(this@MainActivity, 3)
-        recyclerView.adapter = imageAdapter
+        recyclerView.run {
+            layoutManager = GridLayoutManager(this@MainActivity, 3)
+            adapter = imageAdapter
+        }
 
-        lifecycleScope.launch { // TODO : move into separate func
-            val images = searchImages(lastQuery)
-            for (image in images) {
-                if (image != null) {
-                    imageAdapter.addImage(image)
-                }
-            }
-            imagesDeferred = CompletableDeferred()
-            imagesDeferred.complete(images.toMutableList())
+        loadImages()
+    }
+
+    private fun loadImagesNextPage() {
+        lifecycleScope.launch {
+            currentPage += 1
+            lastQuery.page = currentPage
+            val newImages = searchImages(lastQuery)
+
+            newImages.forEach { if (it != null) imageAdapter.addImage(it) }
+
+            imagesDeferred.complete(imagesDeferred.await().apply { addAll(newImages) })
+        }
+    }
+
+    private fun loadImages() {
+        lifecycleScope.launch {
+            val newImages = searchImages(lastQuery)
+
+            newImages.forEach { if (it != null) imageAdapter.addImage(it) }
+
+            imagesDeferred.complete(newImages.toMutableList())
         }
     }
 
@@ -88,23 +93,20 @@ class MainActivity : AppCompatActivity() {
 
             lifecycleScope.launch { // TODO : move into separate func
                 lastQuery = SearchQuery(query = searchField.text.toString())
-                val images = searchImages(lastQuery)
+                val newImages = searchImages(lastQuery)
 
                 imageAdapter.clear()
 
                 (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                     .hideSoftInputFromWindow(searchField.windowToken, 0)
+
                 searchField.clearFocus()
 
-                for (image in images) {
-                    if (image != null) {
-                        imageAdapter.addImage(image)
-                    }
-                }
+                newImages.forEach { if (it != null) imageAdapter.addImage(it) }
 
-                imagesDeferred = CompletableDeferred()
-                imagesDeferred.complete(images.toMutableList())
+                imagesDeferred.complete(newImages.toMutableList())
             }
+
             return@setOnEditorActionListener true
         }
     }
@@ -135,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         var c = 0
         imagesDeferred.await().subList(startIndex, endIndex).forEach {
-            bundle.putString("$c", Json.encodeToString(it))
+            bundle.putString("image$c", Json.encodeToString(it))
             c += 1
         }
 

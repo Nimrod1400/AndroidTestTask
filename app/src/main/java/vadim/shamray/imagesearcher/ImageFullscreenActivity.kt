@@ -50,7 +50,7 @@ class ImageFullscreenActivity : AppCompatActivity() {
         imagesCount = bundle?.getInt(ARG_AMOUNT) ?: 1
 
         for (i in 0..<imagesCount) {
-            val image = bundle?.getString("$i") ?: ""
+            val image = bundle?.getString("image$i") ?: ""
             images.add(image)
         }
     }

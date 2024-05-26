@@ -4,18 +4,11 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import vadim.shamray.imagesearcher.images.Image
-import vadim.shamray.imagesearcher.imageslider.ARG_IMAGE
-import vadim.shamray.imagesearcher.imageslider.ImageFragment
+import vadim.shamray.imagesearcher.fragments.ARG_IMAGE
+import vadim.shamray.imagesearcher.fragments.ImageFragment
 
 class ImageSliderAdapter(fragment: FragmentActivity) : FragmentStateAdapter(fragment) {
-    val images = mutableListOf<String>()
-
-    override fun getItemCount(): Int {
-        return images.size
-    }
+    private val images = mutableListOf<String>()
 
     override fun createFragment(position: Int): Fragment {
         val fragment = ImageFragment(position, images.size)
@@ -26,9 +19,12 @@ class ImageSliderAdapter(fragment: FragmentActivity) : FragmentStateAdapter(frag
         return fragment
     }
 
+    override fun getItemCount(): Int {
+        return images.size
+    }
+
     fun addImage(image: String) {
         images.add(image)
-
         notifyItemInserted(images.lastIndex)
     }
 }
