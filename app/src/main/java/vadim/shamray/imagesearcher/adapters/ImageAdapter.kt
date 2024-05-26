@@ -20,8 +20,8 @@ class ImageAdapter(private val scope: LifecycleCoroutineScope,
     private val images: MutableList<Image> = mutableListOf()
 
     class ImageHolder(private val scope: LifecycleCoroutineScope,
-                      template: View,
-                      private val onItemClick: (Int) -> Unit)
+                      private val onItemClick: (Int) -> Unit,
+                      template: View)
         : RecyclerView.ViewHolder(template) {
         private val binding = ImageTemplateBinding.bind(template)
 
@@ -61,7 +61,7 @@ class ImageAdapter(private val scope: LifecycleCoroutineScope,
             .from(parent.context)
             .inflate(R.layout.image_template, parent, false)
 
-        return ImageHolder(scope, view, onItemClick)
+        return ImageHolder(scope, onItemClick, view)
     }
 
     override fun getItemCount() = images.size
