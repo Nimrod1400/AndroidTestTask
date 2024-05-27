@@ -78,6 +78,7 @@ class ImageAdapter(private val scope: LifecycleCoroutineScope,
 
     fun clear() {
         images.clear()
-        notifyItemRangeRemoved(0, images.lastIndex)
+
+        notifyDataSetChanged()
     }
 }

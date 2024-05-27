@@ -105,9 +105,10 @@ class MainActivity : AppCompatActivity() {
 
                 searchField.clearFocus()
 
-                newImages.forEach { if (it != null) imageAdapter.addImage(it) }
-
+                imagesDeferred = CompletableDeferred()
                 imagesDeferred.complete(newImages.toMutableList())
+
+                newImages.forEach { if (it != null) imageAdapter.addImage(it) }
             }
 
             return@setOnEditorActionListener true
