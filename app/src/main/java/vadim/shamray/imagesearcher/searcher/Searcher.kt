@@ -54,7 +54,7 @@ suspend fun searchImages(query: SearchQuery): List<Image?> = withContext(Dispatc
     val requestBody = query.toJson().toRequestBody("application/json".toMediaType())
     val request = Request.Builder()
         .url("https://google.serper.dev/images")
-        .addHeader("X-API-KEY", "e3f84fbb9eef556f780630cdc5fb55097dbc8e5b")
+        .addHeader("X-API-KEY", "e3f84fbb9eef556f780630cdc5fb55097dbc8e5b") // TODO : move in separate not versioned file
         .post(requestBody)
         .build()
 
